@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Link from "next/link";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { login } from "@/lib/actions/login";
+import { Socail } from "./social";
 
 import {
   Card,
@@ -11,6 +15,7 @@ import {
   CardFooter,
   CardTitle,
   CardContent,
+  CardDescription,
 } from "../ui/card";
 
 import {
@@ -38,6 +43,8 @@ const formSchema = z.object({
 });
 
 export const LoginForm = () => {
+  const [showPassword, setShowPassword] = useState<true | false>(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,14 +53,24 @@ export const LoginForm = () => {
     },
   });
 
+  const onSubmit = () => {
+    login();
+    form.reset();
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevState) => !prevState);
+  };
+
   return (
     <Card className="w-[400px] shadow-lg">
-      <CardHeader>
-        <CardTitle>Log In</CardTitle>
+      <CardHeader className="items-center text-xl">
+        <CardTitle className="text-2xl">Log In</CardTitle>
+        <CardDescription>Welcome Back</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onClick={form.handleSubmit(() => {})} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
               <FormField
                 control={form.control}
@@ -80,11 +97,19 @@ export const LoginForm = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="********"
-                        type="password"
-                      />
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          type={showPassword ? "text" : "password"}
+                        />
+                        <button
+                          type="button"
+                          onClick={togglePasswordVisibility}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -98,7 +123,8 @@ export const LoginForm = () => {
           </form>
         </Form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col space-y-4">
+        <Socail />
         <Button variant="link" size="sm" asChild className="w-full font-normal">
           <Link href="/auth/register" className="text-xs">
             Create an account

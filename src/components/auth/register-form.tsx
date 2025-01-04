@@ -1,18 +1,22 @@
 "use client";
 
+import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Link from "next/link";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-
+import { Socail } from "./social";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardHeader,
   CardFooter,
   CardTitle,
   CardContent,
-} from "../ui/card";
-
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Form,
   FormField,
@@ -20,11 +24,11 @@ import {
   FormItem,
   FormControl,
   FormMessage,
-} from "../ui/form";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+} from "@/components/ui/form";
 
-const registerSchema = z.object({
+import { register } from "@/lib/actions/register";
+
+export const registerSchema = z.object({
   name: z
     .string()
     .min(2, {
@@ -44,8 +48,11 @@ const registerSchema = z.object({
 });
 
 export const RegisterForm = () => {
+  const [showPassword, setShowPassword] = useState<true | false>(false);
+
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       email: "",
@@ -53,14 +60,25 @@ export const RegisterForm = () => {
     },
   });
 
+  const onSubmit = (values: z.infer<typeof registerSchema>) => {
+    register(values);
+    form.reset();
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevState) => !prevState);
+  };
+
   return (
     <Card className="w-[400px] shadow-lg">
-      <CardHeader>
-        <CardTitle>Create an Account</CardTitle>
+      <CardHeader className="items-center">
+        <CardTitle className="text-2xl">Register</CardTitle>
+        <CardDescription>Create an Account!</CardDescription>
       </CardHeader>
+
       <CardContent>
         <Form {...form}>
-          <form onClick={form.handleSubmit(() => {})} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
               <FormField
                 control={form.control}
@@ -101,25 +119,38 @@ export const RegisterForm = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="********"
-                        type="password"
-                      />
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          type={showPassword ? "text" : "password"}
+                        />
+                        <button
+                          type="button"
+                          onClick={togglePasswordVisibility}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
+                    <p className="text-xs text-gray-500">
+                      Your password must be at least 8 characters long and
+                      include a number and a special character.
+                    </p>
                   </FormItem>
                 )}
               />
             </div>
-
             <Button type="submit" className="w-full">
               Sign up
             </Button>
           </form>
         </Form>
       </CardContent>
-      <CardFooter>
+
+      <CardFooter className="flex-col space-y-4">
+        <Socail />
         <Button variant="link" size="sm" asChild className="w-full font-normal">
           <Link href="/auth/login" className="text-xs">
             already have an account
