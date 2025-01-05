@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useState, useTransition } from "react";
+
 import Link from "next/link";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { login } from "@/lib/actions/login";
-import { Socail } from "./social";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardHeader,
@@ -16,8 +17,7 @@ import {
   CardTitle,
   CardContent,
   CardDescription,
-} from "../ui/card";
-
+} from "@/components/ui/card";
 import {
   Form,
   FormField,
@@ -25,37 +25,36 @@ import {
   FormItem,
   FormControl,
   FormMessage,
-} from "../ui/form";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+} from "@/components/ui/form";
 
-const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }).trim(),
-  password: z
-    .string()
-    .min(8, { message: "Be at least 8 characters long" })
-    .regex(/[a-zA-Z]/, { message: "Contain at least one letter." })
-    .regex(/[0-9]/, { message: "Contain at least one number." })
-    .regex(/[^a-zA-Z0-9]/, {
-      message: "Contain at least one special character.",
-    })
-    .trim(),
-});
+import { login } from "@/lib/actions/login";
+import { Socail } from "@/components/auth/social";
+import { loginFormSchema } from "@/schema";
 
 export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState<true | false>(false);
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [error, setError] = useState<string | undefined>("");
+  const [isPendding, startTransation] = useTransition();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof loginFormSchema>>({
+    resolver: zodResolver(loginFormSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = () => {
-    login();
-    form.reset();
+  const onSubmit = (values: z.infer<typeof loginFormSchema>) => {
+    setSuccess("");
+    setError("");
+
+    startTransation(() => {
+      login(values).then((data) => {
+        setSuccess(data.success);
+        setError(data.error);
+      });
+    });
   };
 
   const togglePasswordVisibility = () => {
@@ -82,6 +81,7 @@ export const LoginForm = () => {
                       <Input
                         {...field}
                         placeholder="name@example.com"
+                        disabled={isPendding}
                         type="email"
                       />
                     </FormControl>
@@ -100,6 +100,7 @@ export const LoginForm = () => {
                       <div className="relative">
                         <Input
                           {...field}
+                          disabled={isPendding}
                           type={showPassword ? "text" : "password"}
                         />
                         <button
@@ -117,7 +118,11 @@ export const LoginForm = () => {
               />
             </div>
 
-            <Button type="submit" className="w-full">
+            {/* TODO: create a component to handle error and success messages */}
+            <div className="text-xs text-green-600">{success && success}</div>
+            <div className="text-xs text-red-600">{error && error}</div>
+
+            <Button type="submit" disabled={isPendding} className="w-full">
               Log In
             </Button>
           </form>

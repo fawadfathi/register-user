@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useState, useTransition } from "react";
+
 import Link from "next/link";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Socail } from "./social";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,32 +27,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { Socail } from "@/components/auth/social";
 import { register } from "@/lib/actions/register";
-
-export const registerSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: "Be at least 2 character",
-    })
-    .trim(),
-  email: z.string().email({ message: "Please enter a valid email." }).trim(),
-  password: z
-    .string()
-    .min(8, { message: "Be at least 8 characters long" })
-    .regex(/[a-zA-Z]/, { message: "Contain at least one letter." })
-    .regex(/[0-9]/, { message: "Contain at least one number." })
-    .regex(/[^a-zA-Z0-9]/, {
-      message: "Contain at least one special character.",
-    })
-    .trim(),
-});
+import { registerFormSchema } from "@/schema";
 
 export const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState<true | false>(false);
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [error, setError] = useState<string | undefined>("");
+  const [isPendding, startTransation] = useTransition();
 
-  const form = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
+  const form = useForm<z.infer<typeof registerFormSchema>>({
+    resolver: zodResolver(registerFormSchema),
     mode: "onChange",
     defaultValues: {
       name: "",
@@ -60,9 +47,16 @@ export const RegisterForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof registerSchema>) => {
-    register(values);
-    form.reset();
+  const onSubmit = (values: z.infer<typeof registerFormSchema>) => {
+    setSuccess("");
+    setError("");
+
+    startTransation(() => {
+      register(values).then((data) => {
+        setSuccess(data.success);
+        setError(data.error);
+      });
+    });
   };
 
   const togglePasswordVisibility = () => {
@@ -87,7 +81,11 @@ export const RegisterForm = () => {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Name" />
+                      <Input
+                        {...field}
+                        disabled={isPendding}
+                        placeholder="Name"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -104,6 +102,7 @@ export const RegisterForm = () => {
                       <Input
                         {...field}
                         placeholder="name@example.com"
+                        disabled={isPendding}
                         type="email"
                       />
                     </FormControl>
@@ -122,6 +121,7 @@ export const RegisterForm = () => {
                       <div className="relative">
                         <Input
                           {...field}
+                          disabled={isPendding}
                           type={showPassword ? "text" : "password"}
                         />
                         <button
@@ -142,6 +142,11 @@ export const RegisterForm = () => {
                 )}
               />
             </div>
+
+            {/* TODO: create a component to handle error and success messages */}
+            <div className="text-xs text-green-600">{success && success}</div>
+            <div className="text-xs text-red-600">{error && error}</div>
+
             <Button type="submit" className="w-full">
               Sign up
             </Button>
