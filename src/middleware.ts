@@ -22,15 +22,18 @@ export default auth((req) => {
   }
 
   // Check Auth Route which is Public Routes
+
   if (isAuthRoute) {
-    // if the user logged in than redirect the user to DEFAULT_LOGIN_REDIRECT(/settings)
+    //  if the user logged in than redirect the user to DEFAULT_LOGIN_REDIRECT(/settings)
+
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
     return;
   }
 
-  //  check if the use is not logged in and if the user is not in publicRoute than redirect the user to the "auth/login"
+  // check if the user is not (logged-in) and if the user is not in publicRoute than redirect the user to the "auth/login"
+
   if (!isLoggedIn && !isPublicRoute) {
     return Response.redirect(new URL("auth/login", nextUrl));
   }
@@ -38,9 +41,7 @@ export default auth((req) => {
   return;
 });
 
-/**
- * This config Specifies which paths the middleware should apply to using regex pattern
- */
+// This config Specifies which paths the middleware should apply to using regex pattern
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };

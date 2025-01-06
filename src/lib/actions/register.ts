@@ -30,5 +30,5 @@ export const register = async (values: z.infer<typeof registerFormSchema>) => {
     },
   });
 
-  return { success: "Email sent!" };
+  return { success: "User Registered!" };
 };
