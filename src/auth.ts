@@ -1,11 +1,22 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { getUserById } from "./data/user";
+import { getUserById } from "@/data/user";
 import db from "@/lib/db";
 import authConfig from "@/auth.config";
 import { UserRole } from "@prisma/client";
 
-// we use Prisma in the callback which is not support in the Edge and for this resone we seperate the auth from auth-config
+// async signIn({ user }) {
+//   // if in the future shows any error come here at first:
+//   if (!user.id) return false;
+//   const existingUser = await getUserById(user.id);
+
+//   // if the user is not avilable in database for any reson and if the existingUser not verified that returh false
+//   if (!existingUser || !existingUser.emailVerified) {
+//     return false;
+//   }
+
+//   return true;
+// },// we use Prisma in the callback which is not support in the Edge and for this resone we seperate the auth from auth-config
 export const { auth, handlers, signIn, signOut } = NextAuth({
   callbacks: {
     async session({ token, session }) {

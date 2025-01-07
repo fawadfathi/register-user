@@ -43,5 +43,5 @@ export default auth((req) => {
 
 // This config Specifies which paths the middleware should apply to using regex pattern
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ["/((?!public|api|_next/static|_next/image|favicon.ico).*)"],
 };
