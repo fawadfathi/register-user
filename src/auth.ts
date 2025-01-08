@@ -18,7 +18,32 @@ import { UserRole } from "@prisma/client";
 //   return true;
 // },// we use Prisma in the callback which is not support in the Edge and for this resone we seperate the auth from auth-config
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  // Always return "auth/login" when something goes wrong
+  // pages: {
+  //   signIn: "/auth/login",
+  //   error: "/auth/error",
+  // },
+
+  events: {
+    async linkAccount({ user }) {
+      await db.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() },
+      });
+    },
+  },
+
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider !== "credentials") return true;
+
+      if (!user.id) return false;
+      const existingUser = await getUserById(user.id);
+
+      if (!existingUser?.emailVerified) return false;
+
+      return true;
+    },
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;

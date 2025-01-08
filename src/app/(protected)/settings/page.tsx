@@ -1,12 +1,22 @@
 import { auth, signOut } from "@/auth";
-import { Button } from "@/components/ui/button";
 
 const Settins = async () => {
   const session = await auth();
 
   return (
-    <div>
-      {JSON.stringify(session)}
+    <div className="p-5">
+      <div>
+        {session && (
+          <ul>
+            {Object.entries(session).map(([key, value]) => (
+              <li key={key}>
+                <strong>{key}:</strong> {JSON.stringify(value)}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <form
         action={async () => {
           "use server";
@@ -14,7 +24,12 @@ const Settins = async () => {
           await signOut();
         }}
       >
-        <Button type="submit">Log Out</Button>
+        <button
+          type="submit"
+          className="bg-gray-50 hover:bg-gray-100 border px-2 text-xs py-1 mt-4"
+        >
+          Log Out
+        </button>
       </form>
     </div>
   );

@@ -30,8 +30,14 @@ import {
 import { login } from "@/lib/actions/login";
 import { Socail } from "@/components/auth/social";
 import { loginFormSchema } from "@/schema";
+import { useSearchParams } from "next/navigation";
 
 export const LoginForm = () => {
+  const searchParams = useSearchParams();
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "Email already in use with different provider!"
+      : "";
   const [showPassword, setShowPassword] = useState<true | false>(false);
   const [success, setSuccess] = useState<string | undefined>("");
   const [error, setError] = useState<string | undefined>("");
@@ -51,8 +57,8 @@ export const LoginForm = () => {
 
     startTransation(() => {
       login(values).then((data) => {
-        setSuccess(data.success);
-        setError(data.error);
+        setSuccess(data?.success);
+        setError(data?.error);
       });
     });
   };
@@ -118,9 +124,11 @@ export const LoginForm = () => {
               />
             </div>
 
-            {/* TODO: create a component to handle error and success messages */}
+            {/* TODO: create a component to handle error and success message */}
             <div className="text-xs text-green-600">{success && success}</div>
-            <div className="text-xs text-red-600">{error && error}</div>
+            <div className="text-xs text-red-600">
+              {error ? error : urlError}
+            </div>
 
             <Button type="submit" disabled={isPendding} className="w-full">
               Log In

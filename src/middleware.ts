@@ -43,5 +43,14 @@ export default auth((req) => {
 
 // This config Specifies which paths the middleware should apply to using regex pattern
 export const config = {
-  matcher: ["/((?!public|api|_next/static|_next/image|favicon.ico).*)"],
+  /*
+   * Apply middleware to all paths except:
+   * - public (static files)
+   * - api (API routes)
+   * - _next/static (Next.js static files)
+   * - _next/image (Next.js image optimization files)
+   * - favicon.ico (favicon file)
+   */
+
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
